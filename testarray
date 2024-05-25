@@ -1,0 +1,144 @@
+def combine_arrays(config_file, port_mappings):
+  """
+  <combine the 2 Array>
+  Given are 2 arrays config_file and port_mappings. These arrays may NOT have the
+  same number of elements, but follow a specific pattern, as seen in the example.
+  Two arrays config_file and port_mappings form one array called output. Here, 
+the __10.1.1.1|10.2.2.2__ are represented as headers and may not necessarily be in the IP notation format. 
+They may also have names such as __Switch1A|Switch1B__. identify function with logic to combine these two arrays and return output array of string. 
+Note, for all other scenarios, please return ["invalid_arguments_given"]
+
+  config_file = [
+  "__10.1.1.1|10.2.2.2__" 
+  "portA:enabledetrue",
+  "portB: vlan=10",
+  "portC:vian=200"
+  "__10.3.3.3__", 
+  "portA:poe=false",
+  "portA: speed=100mbps",
+  "portB:vlan=15"
+  ]
+
+  port mappings = [
+  "__10.1.1.1|10.2.2.2__ ",
+  "portA:member1_port3",
+  "portB:member2_port27",
+  "portC:member2_port14",
+  "__10.3.3.3__",
+  "portA:port4",
+  "portB:port15"
+  ]
+
+  output = [
+  "__10.1.1.1|10.2.2.2__", 
+  "member1_port3: enabled=true",
+  "member2_port27:vlan=10",
+  "member1_port14:vlan=200"
+  "__10.3.3.3__",
+  "port4:poe=false",
+  "port4:speed=100mbps",
+  "port15:vlan=15"
+  ]
+
+  """
+  output = []
+  config_dict = {}
+  port_dict = {}
+  current_header = None
+  
+  # Validate input and populate dictionaries
+  for item in config_file:
+    if item.startswith("__") and item.endswith("__"):
+      current_header = item
+      config_dict[current_header] = []
+    elif current_header:
+      config_dict[current_header].append(item)
+    else:
+      return ["invalid_arguments_given"]
+
+  current_header = None
+  for item in port_mappings:
+    if item.startswith("__") and item.endswith("__"):
+      current_header = item
+      port_dict[current_header] = []
+    elif current_header:
+      port_dict[current_header].append(item)
+    else:
+      return ["invalid_arguments_given"]
+
+  # Check if dictionaries have the same headers
+  if config_dict.keys() != port_dict.keys():
+    return ["invalid_arguments_given"]
+
+  # Combine data
+  for header, config_values in config_dict.items():
+    output.append(header)
+    port_values = port_dict[header]
+
+    for i, config_value in enumerate(config_values):
+      port_part = port_values[i].split(":")[1] if i < len(port_values) else ""
+      config_part = config_value.split(":")[1]
+      output.append(f"{port_part}:{config_part}")
+
+  return output
+
+def main(file_path=None):  # Optional file_path argument
+    """
+    Combines config_file and port_mappings data.
+
+    Args:
+        file_path (str, optional): Path to the input file. 
+                                  If not provided, uses hardcoded arrays.
+    """
+    if file_path:
+        try:
+            with open(file_path, 'r') as file:
+                lines = file.readlines()
+
+            combined_data = [[], []]  # config_file, port_mappings
+            current_index = 0  # Start with config_file
+
+            for line in lines:
+                line = line.strip()
+                if line[:2] == "__" and line[-2:] == "__":
+                    current_index = 1 - current_index  # Switch to the other list
+                else:
+                    combined_data[current_index].append(line)
+
+            config_file, port_mappings = combined_data  # Unpack back into separate lists
+        except FileNotFoundError:
+            print("Error: File not found.")
+            return  # Exit if file not found
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return  # Exit on other errors
+    else:
+        # Use hardcoded arrays if no file provided
+        config_file = [
+            "__10.1.1.1|10.2.2.2__",
+            "portA:enabledetrue",
+            "portB: vlan=10",
+            "portC:vian=200",
+            "__10.3.3.3__",
+            "portA:poe=false",
+            "portA: speed=100mbps",
+            "portB:vlan=15"
+        ]
+
+        port_mappings = [
+            "__10.1.1.1|10.2.2.2__ ",
+            "portA:member1_port3",
+            "portB:member2_port27",
+            "portC:member2_port14",
+            "__10.3.3.3__",
+            "portA:port4",
+            "portB:port15"
+        ]
+
+    print("config_file:", config_file)
+    print("port_mappings:", port_mappings)
+    output = combine_arrays(config_file, port_mappings)
+    print(output)
+
+if __name__ == "__main__":
+    main()  # Provide file path here or remove to use hardcoded arrays

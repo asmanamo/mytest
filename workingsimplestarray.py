@@ -1,7 +1,9 @@
-#working simplest
 def combine_arrays(config_file, port_mappings):
     result = []
     port_mapping_index = 0
+    
+    if not isinstance(config_file, list) or not isinstance(port_mappings, list):
+        return ["invalid_arguments_given"]
 
     i = 0
     while i < len(config_file):
@@ -35,7 +37,7 @@ def combine_arrays(config_file, port_mappings):
             i += 1
         else:
             # Skip this element, as it doesn't follow the expected format
-            i += 1
+            return ["invalid_arguments_given"]
 
     return result
 

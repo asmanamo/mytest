@@ -15,15 +15,17 @@ def combine_arrays(config_file, port_mappings):
             i += 1
         elif ":" in config_line and port_mapping_index < len(port_mappings) and ":" in port_mappings[port_mapping_index]:
             # This is a key-value pair, split it and combine with the port mapping
-            config_key, config_value = config_line.split(":")
-            port_mapping_key, port_mapping_value = port_mappings[port_mapping_index].split(":")
+            #config_key, config_value = config_line.split(":")
+            #port_mapping_key, port_mapping_value = port_mappings[port_mapping_index].split(":")
+            try:
+               config_key, config_value = config_line.split(":")
+               port_mapping_key, port_mapping_value = port_mappings[port_mapping_index].split(":")
+            except ValueError:
+               return ["invalid_arguments_given"]    
 
-            # Correctly split the config_key to get the actual key
-            actual_config_key = config_key.split("=")[0]
-
-            new_key = f"{port_mapping_value.strip()}:{actual_config_key.strip()}"
+            new_key = port_mapping_value.strip()
             new_value = config_value.strip()
-            result.append(f"{new_key}={new_value}")
+            result.append(f"{new_key}:{new_value}")
 
             # Check if the next line also belongs to the same port mapping
             if i + 1 < len(config_file) and not config_file[i + 1].startswith("__"):
@@ -51,7 +53,7 @@ config_file = [
     "portA: speed=100mbps",
     "portB:vlan=15",
     "__Spine300__",
-    "portA:poe=false",
+    "portA: poe=false",
     "portA: speed=100mbps",
     "portB:vlan=15"
 ]

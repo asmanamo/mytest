@@ -2,7 +2,7 @@ def combine_arrays(config_file, port_mappings):
     result = []
 
     if not isinstance(config_file, list) or not isinstance(port_mappings, list):
-        return ["invalid_arguments_given"]
+        return ["invalid_arguments_given, not list"]
 
     # Create a dictionary to store port mappings by header and port
     port_mappings_dict = {}
@@ -76,6 +76,5 @@ port_mappings = [
     "portB:member2_port27",
     "portC:member2_port14"
 ]
-
 output = combine_arrays(config_file, port_mappings)
 print('\n'.join(output))

@@ -1,0 +1,73 @@
+def combine_arrays(config_file, port_mappings):
+    result = []
+    iv = ["invalid_arguments_given"]
+
+    if not isinstance(config_file, list) or not isinstance(port_mappings, list):
+        return iv
+
+    # create dictionary for port_mappings
+    port_mappings_dict = {}
+    current_header = None
+
+    for item in port_mappings:
+        if item.startswith("__"):
+            current_header = item
+            port_mappings_dict[current_header] = {}
+        elif current_header:
+            try:
+                port_key, port_value = item.split(":")
+                port_mappings_dict[current_header][port_key.strip()] = port_value.strip()
+            except ValueError:
+                return iv
+
+    for config_line in config_file:
+        if config_line.startswith("__"):
+            # header to add to the output
+            current_header = config_line
+            result.append(current_header)
+        elif ":" in config_line:
+            try:
+                config_key, config_value = config_line.split(":")
+                # find corresponding port_mappings for this header and port
+                current_port_mappings = port_mappings_dict.get(current_header)
+                if current_port_mappings:
+                    port_mappings_value = current_port_mappings.get(config_key.strip())
+                    if port_mappings_value is not None:
+                        new_key = port_mappings_value
+                        result.append(f"{new_key}:{config_value.strip()}")
+            except ValueError:
+                return iv
+
+    return result
+
+# Test the function
+config_file = [
+    "__device100__",
+    "portA:enabledetrue",
+    "portB: vlan=10",
+    "portC:vian=200",
+    "__10.3.3.3__",
+    "portA:poe=false",
+    "portA: speed=100mbps",
+    "portB:vlan=15",
+    "__Spine300__",
+    "portA: poe=false",
+    "portA: speed=100mbps",
+    "portB:vlan=15"
+]
+
+port_mappings = [
+    "__10.3.3.3__",
+    "portB:port15",
+    "portA:port4",
+    "__Spine300__",
+    "portA:port40",
+    "portB:port5",
+    "__device100__",
+    "portA:member1_port3",
+    "portB:member2_port27",
+    "portC:member2_port14"
+]
+
+output = combine_arrays(config_file, port_mappings)
+print('\n'.join(output))
